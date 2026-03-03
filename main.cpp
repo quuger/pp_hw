@@ -4,6 +4,7 @@
 #include <cstring>
 #include <iostream>
 #include <new>
+#include <random>
 
 constexpr std::size_t N = 1 << 20;
 
@@ -68,9 +69,15 @@ int main() {
         b[i] = dis(gen);
     }
 
-    std::cout << "Naive: " << measure(add_naive, a, b, c, N) << " ms\n";
-    std::cout << "SSE  : " << measure(add_sse, a, b, c, N) << " ms\n";
-    std::cout << "AVX  : " << measure(add_avx, a, b, c, N) << " ms\n";
+    auto naive_time = measure(add_naive, a, b, c, N);
+    auto sse_time = measure(add_sse, a, b, c, N);
+    auto avx_time = measure(add_avx, a, b, c, N);
+
+    std::cout << "Naive: " << naive_time << " ms\n";
+    std::cout << "SSE  : " << sse_time << " ms\t(меньше Naive в "
+              << sse_time / naive_time << " раз)\n";
+    std::cout << "AVX  : " << avx_time << " ms\t(меньше Naive в "
+              << avx_time / naive_time << " раз)\n";
 
     operator delete[](a, std::align_val_t(32));
     operator delete[](b, std::align_val_t(32));
