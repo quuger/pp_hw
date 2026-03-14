@@ -18,10 +18,10 @@ void add_sse(const float *a, const float *b, float *c, std::size_t n) {
     std::size_t i = 0;
 
     for (; i + 4 <= n; i += 4) {
-        __m128 va = _mm_loadu_ps(a + i);
-        __m128 vb = _mm_loadu_ps(b + i);
+        __m128 va = _mm_load_ps(a + i);
+        __m128 vb = _mm_load_ps(b + i);
         __m128 vc = _mm_add_ps(va, vb);
-        _mm_storeu_ps(c + i, vc);
+        _mm_store_ps(c + i, vc);
     }
 
     for (; i < n; ++i) {
@@ -33,10 +33,10 @@ void add_avx(const float *a, const float *b, float *c, std::size_t n) {
     std::size_t i = 0;
 
     for (; i + 8 <= n; i += 8) {
-        __m256 va = _mm256_loadu_ps(a + i);
-        __m256 vb = _mm256_loadu_ps(b + i);
+        __m256 va = _mm256_load_ps(a + i);
+        __m256 vb = _mm256_load_ps(b + i);
         __m256 vc = _mm256_add_ps(va, vb);
-        _mm256_storeu_ps(c + i, vc);
+        _mm256_store_ps(c + i, vc);
     }
 
     for (; i < n; ++i) {
@@ -75,9 +75,9 @@ int main() {
 
     std::cout << "Naive: " << naive_time << " ms\n";
     std::cout << "SSE  : " << sse_time << " ms\t(меньше Naive в "
-              << sse_time / naive_time << " раз)\n";
+              << naive_time / sse_time << " раз)\n";
     std::cout << "AVX  : " << avx_time << " ms\t(меньше Naive в "
-              << avx_time / naive_time << " раз)\n";
+              << naive_time / avx_time << " раз)\n";
 
     operator delete[](a, std::align_val_t(32));
     operator delete[](b, std::align_val_t(32));

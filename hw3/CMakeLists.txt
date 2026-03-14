@@ -3,10 +3,9 @@ project(main)
 
 set(CMAKE_CXX_STANDARD 23)
 
-include_directories(include)
+# set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} -DINFO)
 
 add_executable(main
     main.cpp
 )
 
-target_compile_options(${PROJECT_NAME} PRIVATE -mavx -O0)
