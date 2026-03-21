@@ -38,7 +38,7 @@ void TcpClient::connect_to_server(const std::string &host, int port) const {
 }
 
 void TcpClient::send_message(const std::string &msg) const {
-    if (signal_handler::get().load()) {
+    if (signal_handler::get().test()) {
         throw std::runtime_error(
             "Shutdown in progress, so unable to send message \"" + msg + "\""
         );
@@ -49,7 +49,7 @@ void TcpClient::send_message(const std::string &msg) const {
 }
 
 std::string TcpClient::receive_message() const {
-    if (signal_handler::get().load()) {
+    if (signal_handler::get().test()) {
         throw std::runtime_error(
             "Shutdown in progress, so unable to recieve message"
         );
@@ -65,7 +65,7 @@ std::string TcpClient::receive_message() const {
         return "";
     }
 
-    return std::string(buffer, bytes);
+    return {buffer, static_cast<std::size_t>(bytes)};
 }
 
 TcpClient::~TcpClient() {

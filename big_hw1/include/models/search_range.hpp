@@ -1,21 +1,22 @@
 #pragma once
 #include <string>
 #include <vector>
+#include "models/bigint.hpp"
 
 namespace brute_force_node {
 
 class SearchRange {
 public:
     SearchRange(const std::string &begin, const std::string &end);
-    SearchRange(uint64_t begin, uint64_t end);
-    [[nodiscard]] uint64_t size() const noexcept;
-    [[nodiscard]] uint64_t begin() const noexcept;
-    [[nodiscard]] uint64_t end() const noexcept;
-    [[nodiscard]] std::vector<SearchRange> split(uint64_t count) const;
+    SearchRange(models::Bigint begin, models::Bigint end);
+    [[nodiscard]] models::Bigint size() const noexcept;
+    [[nodiscard]] models::Bigint begin() const noexcept;
+    [[nodiscard]] models::Bigint end() const noexcept;
+    [[nodiscard]] std::vector<SearchRange> split(models::Bigint count) const;
 
 private:
-    uint64_t begin_;
-    uint64_t end_;
+    models::Bigint begin_;
+    models::Bigint end_;
 };
 
 }  // namespace brute_force_node

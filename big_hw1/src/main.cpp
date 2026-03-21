@@ -41,7 +41,7 @@ int main(int argc, char **argv) {
         result = 1;
     }
 
-    if (brute_force_node::signal_handler::get().load()) {
+    if (brute_force_node::signal_handler::get().test()) {
         result = 128 + brute_force_node::signal_handler::get_signal_code();
     }
 

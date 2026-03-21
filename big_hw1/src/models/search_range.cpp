@@ -1,16 +1,17 @@
 #include "models/search_range.hpp"
 #include <cstdint>
-#include <iostream>
 #include <sstream>
 #include <vector>
-#include "models/key.hpp"
 
 namespace {
-void ensure_borders(uint64_t begin, uint64_t end) {
-    if (begin > end) {
+using models::Bigint;
+
+void ensure_borders(const Bigint &begin, const Bigint &end) {
+    if (end < begin) {
         throw std::runtime_error((std::stringstream{}
                                   << "begin of the range is greater than end: "
-                                  << begin << " > " << end)
+                                  << begin.to_string() << " > "
+                                  << end.to_string())
                                      .str());
     }
 }
@@ -19,43 +20,42 @@ void ensure_borders(uint64_t begin, uint64_t end) {
 namespace brute_force_node {
 
 SearchRange::SearchRange(const std::string &begin, const std::string &end)
-    : begin_(Key(begin)), end_(Key(end)) {
+    : begin_(Bigint(begin)), end_(Bigint(end)) {
     ensure_borders(begin_, end_);
 }
 
-SearchRange::SearchRange(uint64_t begin, uint64_t end)
-    : begin_(begin), end_(end) {
+SearchRange::SearchRange(Bigint begin, Bigint end)
+    : begin_(std::move(begin)), end_(std::move(end)) {
     ensure_borders(begin_, end_);
 }
 
-uint64_t SearchRange::begin() const noexcept {
+Bigint SearchRange::begin() const noexcept {
     return begin_;
 }
 
-uint64_t SearchRange::end() const noexcept {
+Bigint SearchRange::end() const noexcept {
     return end_;
 }
 
-uint64_t SearchRange::size() const noexcept {
-    return end_ - begin_ + 1;
+Bigint SearchRange::size() const noexcept {
+    return end_ - begin_ + Bigint(1U);
 }
 
-std::vector<SearchRange> SearchRange::split(uint64_t count) const {
+std::vector<SearchRange> SearchRange::split(Bigint count) const {
     std::vector<SearchRange> result;
 
-    uint64_t chunk = size() / count;
+    Bigint chunk = size() / count;
     if (chunk == 0) {
         chunk = 1;
         count = size();
     }
 
-    result.reserve(count);
+    result.reserve(static_cast<uint64_t>(count));
     for (int i = 0; i < count; i++) {
-        uint64_t begin = begin_ + (i * chunk);
-        uint64_t end = (i == count - 1) ? end_ : begin + chunk - 1;
+        Bigint begin = begin_ + (i * chunk);
+        Bigint end = (i == count - 1) ? end_ : begin + chunk - 1;
         result.emplace_back(begin, end);
     }
-
     return result;
 }
 

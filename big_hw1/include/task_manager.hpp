@@ -14,7 +14,7 @@ public:
     void do_scan();
 
 private:
-    void process_task(const TaskMessage &task);
+    void process_task(SearchTask task);
 
     TcpClient tcp_client_;
     brute_force::Engine engine_;

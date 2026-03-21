@@ -1,7 +1,7 @@
 #include "signal_handler.hpp"
 #include <sys/socket.h>
+#include <condition_variable>
 #include <csignal>
-#include <iostream>
 
 namespace {
 std::atomic<int> &socket() {
@@ -12,27 +12,34 @@ std::atomic<int> &socket() {
 void handler(int signal) {
     brute_force_node::signal_handler::get_signal_code().store(signal);
 
-    brute_force_node::signal_handler::get().store(true);
+    brute_force_node::signal_handler::get().test_and_set();
 
     int fd = socket().load();
 
     if (fd != -1) {
         shutdown(fd, SHUT_RDWR);
     }
+
+    brute_force_node::signal_handler::get_sleep_cond_var().notify_all();
 }
 
 }  // namespace
 
 namespace brute_force_node::signal_handler {
 
-std::atomic<bool> &get() {
-    static std::atomic<bool> stop;
+std::atomic_flag &get() {
+    static std::atomic_flag stop;
     return stop;
 }
 
 std::atomic<int> &get_signal_code() {
     static std::atomic<int> code;
     return code;
+}
+
+std::condition_variable &get_sleep_cond_var() {
+    static std::condition_variable cond_var;
+    return cond_var;
 }
 
 void register_socket(int fd) {

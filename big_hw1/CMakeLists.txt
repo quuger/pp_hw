@@ -13,18 +13,20 @@ set(PROJECT_LIB_NAME ${PROJECT_NAME}_lib)
 file(GLOB_RECURSE PROJECT_SOURCES ${PROJECT_SOURCE_DIR}/*.cpp)
 list(REMOVE_ITEM PROJECT_SOURCES ${PROJECT_SOURCE_DIR}/main.cpp)
 
+
 # Library with all logic (shared by main and tests)
 add_library(${PROJECT_LIB_NAME} ${PROJECT_SOURCES})
 target_include_directories(${PROJECT_LIB_NAME} PUBLIC 
   ${CMAKE_SOURCE_DIR}/include
 )
 
-message(${CMAKE_SOURCE_DIR})
+find_package(OpenSSL REQUIRED)
+find_package(Threads REQUIRED)
+target_link_libraries(${PROJECT_LIB_NAME} PUBLIC Threads::Threads OpenSSL::Crypto)
 
 # Main executable
 add_executable(${PROJECT_NAME} ${PROJECT_SOURCE_DIR}/main.cpp)
-target_link_libraries(${PROJECT_NAME} PRIVATE ${PROJECT_LIB_NAME})
 
-find_package(Threads REQUIRED)
-target_link_libraries(${PROJECT_LIB_NAME} PUBLIC Threads::Threads)
-target_link_libraries(${PROJECT_NAME} PRIVATE Threads::Threads)
+target_link_libraries(${PROJECT_NAME}
+  PRIVATE ${PROJECT_LIB_NAME} Threads::Threads OpenSSL::SSL OpenSSL::Crypto
+)
