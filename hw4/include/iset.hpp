@@ -1,4 +1,5 @@
 #pragma once
+#include <limits>
 #include <string>
 
 struct ISet {

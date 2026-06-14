@@ -3,6 +3,7 @@ project(bench LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+add_compile_options(-g3)
 
 set(CMAKE_CXX_COMPILER /opt/homebrew/opt/llvm/bin/clang++)
 

@@ -23,45 +23,45 @@ struct OptimisticSet : ISet {
     }
 
     bool contains(int value) final {
-        auto *node = find(value);
+        auto [node, _] = find(value);
         if (node == head || value != node->value) {
             return false;
         }
 
         std::unique_lock l{node->m};
-        return validate(value, node);
+        return validate(value, node, node->next.load());
     }
 
     void add(int value) final {
-        auto *node = find(value);
-        if (value == node->value) {
-            return;
-        }
+        while (true) {
+            auto [prev, next] = find(value);
+            if (value == prev->value) {
+                return;
+            }
 
-        std::unique_lock l{node->m};
-        if (validate(value, node)) {
-            node->link(new Node(value));
-        } else {
-            add(value);
+            std::unique_lock l{prev->m};
+            if (validate(value, prev, next)) {
+                prev->link(new Node(value));
+                return;
+            }
         }
     }
 
     void remove(int value) final {
-        auto *previous = find(value - 1);
-        std::unique_lock l_prev{previous->m};
+        while (true) {
+            auto [previous, current] = find(value - 1);
 
-        auto *current = previous->next.load();
-        std::unique_lock l_cur{current->m};
+            std::unique_lock l_prev{previous->m};
+            std::unique_lock l_cur{current->m};
 
-        if (value != current->value) {
-            return;
-        }
+            if (value != current->value) {
+                return;
+            }
 
-        if (validate(value - 1, previous) && current == previous->next.load()) {
-            previous->unlink();
-            // delete current;
-        } else {
-            remove(value);
+            if (validate(value - 1, previous, current)) {
+                previous->unlink();
+                return;
+            }
         }
     }
 
@@ -73,17 +73,22 @@ private:
     Node *head = new Node(HEAD_VALUE);
     Node *tail = new Node(TAIL_VALUE);
 
-    Node *find(int value) {
+    std::pair<Node *, Node *> find(int value) {
         auto *current = head;
         auto *next = current->next.load();
         while (next != tail && next->value <= value) {
             current = next;
             next = current->next.load();
         }
-        return current;
+        return {current, next};
     }
 
-    bool validate(int value, Node *node) {
-        return find(value) == node;
+    bool validate(int value, Node *expected_prev, Node *expected_next) {
+        if (expected_prev->next.load() != expected_next) {
+            return false;
+        }
+
+        auto [prev, next] = find(value);
+        return prev == expected_prev;
     }
 };
